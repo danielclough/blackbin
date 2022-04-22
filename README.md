@@ -1,14 +1,9 @@
-coinbin
-=======
+# BlackBin
 
-A Open Source Browser Based Bitcoin Wallet. Version 1.7 beta by OutCast3k
+## A Open Source Browser Based Blackcoin Wallet. 
+Based on [coinb.in](http://coinb.in/) by OutCast3k ([Github](https://github.com/OutCast3k/coinbin/))
 
-Live version available at http://coinb.in/ or coinbin3ravkwb24f7rmxx6w3snkjw45jhs5lxbh3yfeg3vpt6janwqd.onion
-
-Github URL: https://github.com/OutCast3k/coinbin/
-
-Coinb.in supports a number of key features such as: 
-
+Supports a number of key features such as: 
 - Offline Compressed & uncompressed Address creation.
 - Offline Multisignature Address creation.
 - "In browser" Key (re)generation. 
@@ -20,17 +15,9 @@ Coinb.in supports a number of key features such as:
 - Broadcast transactions.
 - nLockTime support.
 - Add custom data to transactions with the use of OP_RETURN.
-- Support current Dark Wallet Stealth Address structure (as of version Alpha 7) for outputs.
 - Brain wallet support.
-- Compatible with bitcoin-qt
-- An offical .onion address for tor users.
+- Compatible with blackmore-qt
 - Offline qrcode creator and scanning tool.
 - HD (bip32) support.
-- Supports altcoins such as litecoin.
-- Replace by fee (RBF) Support.
-- Segwit Support.
-- Bech32 address support.
-- Fee calculator - https://coinb.in/#fees
-- Transaction rebuild support for RBF and double spending.
 
-Donate to 33tht1bKDgZVxb39MnZsWa8oxHXHvUYE4G to see more development!
+Donate to BMWvMeEa88iqBCevi9dVX8GAhnPCh3JBHx to see more development!
