@@ -10,16 +10,27 @@
 	var coinjs = window.coinjs = function () { };
 
 	/* public vars */
-	coinjs.pub = 0x00;
-	coinjs.priv = 0x80;
-	coinjs.multisig = 0x05;
-	coinjs.hdkey = {'prv':0x0488ade4, 'pub':0x0488b21e};
-	coinjs.bech32 = {'charset':'qpzry9x8gf2tvdw0s3jn54khce6mua7l', 'version':0, 'hrp':'bc'};
+	// coinjs.pub = 0x6f; /* testnet */
+	// coinjs.priv = 0xef; /* testnet */
+	// coinjs.multisig = 0xc4; /* testnet */
+	// coinjs.hdkey = {'prv':0x043587cf, 'pub':0x04358394}; /* testnet */
+	coinjs.pub = 0x19;
+	coinjs.priv = 0x99;
+	coinjs.multisig = 0x55;
+	coinjs.hdkey = {'prv':0x043587cf, 'pub':0x04358394};
+	// coinjs.bech32 = {'charset':'qpzry9x8gf2tvdw0s3jn54khce6mua7l', 'version':0, 'hrp':'bc'};
 
 	coinjs.compressed = false;
 
 	/* other vars */
-	coinjs.developer = '33tht1bKDgZVxb39MnZsWa8oxHXHvUYE4G'; //bitcoin
+	coinjs.developer = 'BMWvMeEa88iqBCevi9dVX8GAhnPCh3JBHx'; //blackcoin
+
+	coinjs.txExtraTimeField = true;
+	coinjs.txExtraTimeFieldValue = false;
+	coinjs.txExtraUnitField = false;
+	coinjs.txExtraUnitFieldValue = false;
+	// Remove after Fork
+	$("#nTime").val(Date.now() / 1000 | 0);
 
 	/* bit(coinb.in) api vars */
 	coinjs.hostname	= ((document.location.hostname.split(".")[(document.location.hostname.split(".")).length-1]) == 'onion') ? 'coinbin3ravkwb24f7rmxx6w3snkjw45jhs5lxbh3yfeg3vpt6janwqd.onion' : 'coinb.in';
@@ -320,8 +331,8 @@
 	}
 
 	/* retreive the balance from a given address */
-	coinjs.addressBalance = function(address, callback){
-		coinjs.ajax(coinjs.host+'?uid='+coinjs.uid+'&key='+coinjs.key+'&setmodule=addresses&request=bal&address='+address+'&r='+Math.random(), callback, "GET");
+	coinjs.addressBalance = function(explorer_api, address, callback){
+		coinjs.ajax(explorer_api+address, callback, "GET");
 	}
 
 	/* decompress an compressed public key */
@@ -988,6 +999,9 @@
 		r.timestamp = null;
 		r.block = null;
 
+		// Remove after fork
+		r.nTime = (Date.now() / 1000)*1;
+
 		/* add an input to a transaction */
 		r.addinput = function(txid, index, script, sequence){
 			var o = {};
@@ -1064,13 +1078,13 @@
 
 		/* list unspent transactions */
 		r.listUnspent = function(address, callback) {
-			coinjs.ajax(coinjs.host+'?uid='+coinjs.uid+'&key='+coinjs.key+'&setmodule=addresses&request=unspent&address='+address+'&r='+Math.random(), callback, "GET");
+			coinjs.ajax('https://chainz.cryptoid.info/blk/api.dws?key=1205735eba8c&q=unspent&active='+address, callback, "GET");
 		}
 
-		/* list transaction data */
-		r.getTransaction = function(txid, callback) {
-			coinjs.ajax(coinjs.host+'?uid='+coinjs.uid+'&key='+coinjs.key+'&setmodule=bitcoin&request=gettransaction&txid='+txid+'&r='+Math.random(), callback, "GET");
-		}
+		// /* list transaction data */
+		// r.getTransaction = function(txid, callback) {
+		// 	coinjs.ajax(coinjs.host+'?uid='+coinjs.uid+'&key='+coinjs.key+'&setmodule=bitcoin&request=gettransaction&txid='+txid+'&r='+Math.random(), callback, "GET");
+		// }
 
 		/* add unspent to transaction */
 		r.addUnspent = function(address, callback, script, segwit, sequence){
@@ -1090,38 +1104,27 @@
 					xmlDoc.loadXML(data);
 				}
 
-				var unspent = xmlDoc.getElementsByTagName("unspent")[0];
+				// var unspent = xmlDoc.getElementsByTagName("unspent")[0];
+				var jsonDoc = JSON.parse(data);
+				var unspent = jsonDoc.unspent_outputs;
 
-				if(unspent){ 
-					for(i=1;i<=unspent.childElementCount;i++){
-						var u = xmlDoc.getElementsByTagName("unspent_"+i)[0]
-						var txhash = (u.getElementsByTagName("tx_hash")[0].childNodes[0].nodeValue).match(/.{1,2}/g).reverse().join("")+'';
-						var n = u.getElementsByTagName("tx_output_n")[0].childNodes[0].nodeValue;
-						var scr = script || u.getElementsByTagName("script")[0].childNodes[0].nodeValue;
+				for(i=0;i<unspent.length;i++){
+					var u = unspent[i];
+	                console.log(u);
 
-						if(segwit){
-							/* this is a small hack to include the value with the redeemscript to make the signing procedure smoother. 
-							It is not standard and removed during the signing procedure. */
+                    var txhash = u.tx_hash;
+					var n = u.tx_ouput_n;
+					var scr = u.script;
 
-							s = coinjs.script();
-							s.writeBytes(Crypto.util.hexToBytes(script));
-							s.writeOp(0);
-							s.writeBytes(coinjs.numToBytes(u.getElementsByTagName("value")[0].childNodes[0].nodeValue*1, 8));
-							scr = Crypto.util.bytesToHex(s.buffer);
-						}
-
-						var seq = sequence || false;
-						self.addinput(txhash, n, scr, seq);
-						value += u.getElementsByTagName("value")[0].childNodes[0].nodeValue*1;
-						total++;
-					}
+					var seq = sequence || false;
+					self.addinput(txhash, n, scr, seq);
+					value += u.value*1;
+					total++;
 				}
 
-				x.result = xmlDoc.getElementsByTagName("result")[0].childNodes[0].nodeValue;
 				x.unspent = unspent;
 				x.value = value;
 				x.total = total;
-				x.response = xmlDoc.getElementsByTagName("response")[0].childNodes[0].nodeValue;
 
 				return callback(x);
 			});
@@ -1139,8 +1142,32 @@
 
 		/* broadcast a transaction */
 		r.broadcast = function(callback, txhex){
-			var tx = txhex || this.serialize();
-			coinjs.ajax(coinjs.host+'?uid='+coinjs.uid+'&key='+coinjs.key+'&setmodule=bitcoin&request=sendrawtransaction', callback, "POST", ["rawtx="+tx]);
+			console.log("Reqesting");
+			console.log(txhex);
+			$.ajax({
+				type: "POST",
+				url: "https://chainz.cryptoid.info/blk/api.dws?q=pushtx&key=1205735eba8c",
+				data: txhex,
+				dataType: "text", //"json",
+				error: function(data) {
+						var r = ' Failed to Broadcast.'; // this wants a preceding space
+						$("#walletSendConfirmStatus").addClass('alert-danger').removeClass('alert-success').removeClass("hidden").html(r).prepend('<span class="glyphicon glyphicon-exclamation-sign"></span>');
+				},
+				success: function(data) {
+						if(data){
+								var txid = data; // is this right?
+								$("#walletSendConfirmStatus").addClass('alert-success').removeClass('alert-danger').removeClass("hidden").html(` Txid: <a href="https://chainz.cryptoid.info/blk/tx.dws?${txid}.htm" target="_BLANK"> ${txid} </a>`);
+						} else {
+								$("#walletSendConfirmStatus").addClass('alert-danger').removeClass('alert-success').removeClass("hidden").html(' Unexpected error, please try again').prepend('<span class="glyphicon glyphicon-exclamation-sign"></span>');
+						}
+				},
+				complete: function (data, status) {
+															console.log(data);
+
+						$("#walletSendConfirmStatus").fadeOut().fadeIn();
+						// $(thisbtn).val('Submit').attr('disabled',false);
+				}
+			});
 		}
 
 		/* generate the transaction hash to sign from a transaction input */
@@ -1666,7 +1693,10 @@
 		r.serialize = function(){
 			var buffer = [];
 			buffer = buffer.concat(coinjs.numToBytes(parseInt(this.version),4));
-
+			// Remove after Fork
+			if (coinjs.txExtraTimeField) {
+				buffer = buffer.concat(coinjs.numToBytes(parseInt(this.nTime),4));
+			}
 			if(coinjs.isArray(this.witness)){
 				buffer = buffer.concat([0x00, 0x01]);
 			}
@@ -1740,6 +1770,11 @@
 
 			var obj = new coinjs.transaction();
 			obj.version = readAsInt(4);
+			
+			// Remove after Fork
+			if (coinjs.txExtraTimeField) {
+				obj.nTime = readAsInt(4);
+			}
 
 			if(buffer[pos] == 0x00 && buffer[pos+1] == 0x01){
 				// segwit transaction
