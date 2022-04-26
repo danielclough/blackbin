@@ -17,7 +17,7 @@
 	coinjs.pub = 0x19;
 	coinjs.priv = 0x99;
 	coinjs.multisig = 0x55;
-	coinjs.hdkey = {'prv':0x043587cf, 'pub':0x04358394};
+	coinjs.hdkey = {'prv':0x0488ade4, 'pub':0x0488b21e};
 	// coinjs.bech32 = {'charset':'qpzry9x8gf2tvdw0s3jn54khce6mua7l', 'version':0, 'hrp':'bc'};
 
 	coinjs.compressed = false;
