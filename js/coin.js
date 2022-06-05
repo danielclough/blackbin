@@ -1081,10 +1081,10 @@
 			coinjs.ajax('https://chainz.cryptoid.info/blk/api.dws?key=1205735eba8c&q=unspent&active='+address, callback, "GET");
 		}
 
-		// /* list transaction data */
-		// r.getTransaction = function(txid, callback) {
-		// 	coinjs.ajax(coinjs.host+'?uid='+coinjs.uid+'&key='+coinjs.key+'&setmodule=bitcoin&request=gettransaction&txid='+txid+'&r='+Math.random(), callback, "GET");
-		// }
+		/* list transaction data */
+		r.getTransaction = function(txid, callback) {
+			coinjs.ajax('https://chainz.cryptoid.info/blk/api.dws?key=1205735eba8c&q=unspent&active='+txid+'&r='+Math.random(), callback, "GET");
+		}
 
 		/* add unspent to transaction */
 		r.addUnspent = function(address, callback, script, segwit, sequence){
